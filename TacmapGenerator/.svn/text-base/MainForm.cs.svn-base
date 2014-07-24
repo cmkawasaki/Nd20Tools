@@ -1,0 +1,103 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+
+namespace TacmapGenerator
+{
+    public partial class MainForm : Form
+    {
+        NewTacmapForm newTacmapForm;
+
+
+        public MainForm()
+        {
+            InitializeComponent();
+            //Populate Drop down list
+            tacmapView1.CurrentStencil = StencilType.SINGLE_POINT;
+            singlePointToolStripMenuItem.Checked = true;
+            tacmapView1.DraggingMovementSwitch = true;
+            permitMovementToolStripMenuItem.Checked = true;
+
+        }
+
+        public void RedrawTacmap(int width, int length)
+        {
+            tacmapView1.ResizeControl(width, length);
+            //Insert code to resize form
+            int newWidth = tacmapView1.Width + panel1.Width + (tacmapView1.PixelPerTile * 2);
+            int newLength = Math.Max(tacmapView1.Height, 295) + menuStrip1.Height + (tacmapView1.PixelPerTile * 3) + panel2.Height;
+            this.Width = newWidth;
+            this.Height = newLength;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            if (textBox1.Text.Length > 0)
+            {
+                tacmapView1.TacmapLetter = textBox1.Text[0];
+            }
+            else
+            {
+                tacmapView1.TacmapLetter = ' ';
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.tacmapView1.Print(".\\Current.txt", initTextBox.Text);
+
+            MessageBox.Show("Tacmap Saved!");
+        }
+
+        private void newTacmapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            newTacmapForm = new NewTacmapForm();
+            newTacmapForm.myParentForm = this;
+            newTacmapForm.ShowDialog();
+        }
+
+        private void singlePointToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tacmapView1.CurrentStencil = StencilType.SINGLE_POINT;
+            singlePointToolStripMenuItem.Checked = true;
+            lineToolStripMenuItem.Checked = false;
+        }
+
+        private void lineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tacmapView1.CurrentStencil = StencilType.LINE;
+            singlePointToolStripMenuItem.Checked = false;
+            lineToolStripMenuItem.Checked = true;
+        }
+
+        private void resetTacmapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tacmapView1.ResizeControl(tacmapView1.WidthTiles, tacmapView1.HeightTiles);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            tacmapView1.CopyToClipboard(initTextBox.Text);
+        }
+
+        private void permitMovementToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (permitMovementToolStripMenuItem.Checked == true)
+            {
+                tacmapView1.DraggingMovementSwitch = false; ;
+                permitMovementToolStripMenuItem.Checked = false;
+            }
+            else
+            {
+                tacmapView1.DraggingMovementSwitch = true;
+                permitMovementToolStripMenuItem.Checked = true;
+            }
+        }
+    }
+
+
+}
