@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nd20StatblockGenerator", "Nd20StatblockGenerator.csproj", "{5B451F02-54D5-4EF6-A749-4BEF313D224F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ND20Bloodlines", "ND20Bloodlines\ND20Bloodlines.csproj", "{5FB08326-8571-4D92-8AE1-5C85E346DD1A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B451F02-54D5-4EF6-A749-4BEF313D224F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B451F02-54D5-4EF6-A749-4BEF313D224F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B451F02-54D5-4EF6-A749-4BEF313D224F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B451F02-54D5-4EF6-A749-4BEF313D224F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FB08326-8571-4D92-8AE1-5C85E346DD1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FB08326-8571-4D92-8AE1-5C85E346DD1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FB08326-8571-4D92-8AE1-5C85E346DD1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FB08326-8571-4D92-8AE1-5C85E346DD1A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

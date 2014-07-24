@@ -1,0 +1,645 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Nd20StatblockGenerator;
+using ND20Bloodlines;
+
+namespace Nd20TemplateLib
+{
+    public class NPCTemplate
+    {
+        public List<ClassStatEntry> ClassEntries = null;
+        public int BonusHPFromTemplate = 0;
+
+        //Main Stats
+        public string CharacterName = null;
+        public int TemplateCR = 0;
+        public int TemplateECL = 0;
+
+        public CharacterSize.CharacterSizeEnum CharSize;
+
+        public List<String> MySpecialTemplates = new List<string>();
+
+        //Battle Stats
+        public int BaseInitiative = 0;
+        public AttackStat TemplateAttacks = null;
+        public DefenseStat TemplateDefense = null;
+
+        //Saves
+        public int BaseFortSave = 0;
+        public int BaseReflexSave = 0;
+        public int BaseWillSave = 0;
+
+        public int BaseReputation = 0;
+        public int MaxChakraPool = 0;
+        public int ChakraReservePool = 0;
+
+        public int CharacterLearn = 0;
+        public int CharacterWealth = 0;
+
+        public int CharacterSpeed = 0;
+
+        public CharacterStats BaseStats = null;
+
+        //TEMPORARY: Power Units
+        public int PowerUnitCount = 0;
+        public string SpecialQualities = "";
+
+        public int MaxStrengthRank = 0;
+        public int MaxSpeedRank = 0;
+
+        public int BonusFeats = 0;
+        public int BonusSkillPoints = 0;
+
+        //public MinionEliteTemplates.CharacterType MyCharType;
+        public ICharacterType MyCharType;
+        public ICharacterType MyBunshinType;
+
+        public NPCTemplate _BloodlineTemplate = null;
+
+        public NPCTemplate()
+        {
+
+        }
+
+        public NPCTemplate(string MyCharacterName, int BaseCR, int BaseECL, int BaseInit, int BaseBAB, int ExtraAttack, string BaseDefSource, int BaseDef, 
+            int BaseFort, int BaseRef, int BaseWill, int BaseRep, int CharacterCP, CharacterStats StatsPerCharacter, int Learn, int Wealth,
+            int Speed, string MySQList, List<ClassStatEntry> MyList)
+        {
+            CharacterName = MyCharacterName;
+            TemplateCR = BaseCR;
+            TemplateECL = BaseECL;
+            BaseInitiative = BaseInit;
+
+            BaseFortSave = BaseFort;
+            BaseReflexSave = BaseRef;
+            BaseWillSave = BaseWill;
+
+            BaseReputation = BaseRep;
+            MaxChakraPool = CharacterCP;
+
+            BaseStats = StatsPerCharacter;
+
+            CharacterLearn = Learn;
+            CharacterWealth = Wealth;
+
+            CharacterSpeed = Speed;
+            SpecialQualities = MySQList;
+
+            //Defense
+            TemplateDefense = new DefenseStat();
+            TemplateDefense.AddModifier("dex", 0, true, false);
+            TemplateDefense.AddModifier(BaseDefSource, BaseDef, false, false);
+
+            if (null == BaseStats)
+            {
+                BaseStats = new CharacterStats(0, 0, 0, 0, 0, 0);
+            }
+
+            TemplateAttacks = new AttackStat(BaseStats.StrMod, BaseStats.DexMod);
+            TemplateAttacks.BAB = BaseBAB;
+            TemplateAttacks.AddAttackMod(ExtraAttack, true, true, true);
+
+            if (null != MyList)
+            {
+                ClassEntries = MyList;
+            }
+            else
+            {
+                ClassEntries = new List<ClassStatEntry>();
+            }
+
+            CharSize = CharacterSize.CharacterSizeEnum.NOT_DEFINED;
+        }
+
+        public void PrintTemplate()
+        {
+            RTFWriter CharFile;
+
+            if (CharacterName == "")
+            {
+                CharFile = new RTFWriter("Output.rtf");
+            }
+            else
+            {
+                string tFilename = CharacterName.Replace(" ", "_");
+                CharFile = new RTFWriter(tFilename + ".rtf");
+            }
+            CharFile.Open();
+
+            //Begin Character Output
+            //Write Character's Name at Top
+            PrintCharacterTitle(CharFile, MyCharType.GetTitleText());
+
+            PrintCoreStatblock(CharFile);
+
+            //Occupation
+            CharFile.WriteBold("Occupation:");
+            CharFile.Write(" Occupation (");
+            CharFile.WriteItalics("Bonus Class Skills:");
+            CharFile.Write(" Skills; ");
+            CharFile.WriteItalics("Bonus Feat:");
+            CharFile.WriteLine(" Feat)");
+
+            //Skills
+            CharFile.WriteBold("Skills:");
+            CharFile.WriteLine(ClassStatEntry.PrintSkillEntry(ClassEntries));
+                //+ Nd20StatBlockLib.PrintOutCharSkills(BaseStats, NewChar.MyPUCount));
+
+            //Feats
+            int CharFeats = (ClassStatEntry.GetTotalLevel(ClassEntries) / 3) + 1 + BonusFeats;
+            CharFile.WriteBold("Feats:");
+            CharFile.WriteLine(" (" + CharFeats + " feats)");
+
+            //Talents
+            CharFile.Write(ClassStatEntry.PrintTalentEntries(ClassEntries));
+
+            //Equipment
+            CharFile.WriteBold("Equipment:");
+            CharFile.WriteLine(" Possessions.");
+            CharFile.WriteLine(" ");
+
+
+            //Techniques Known
+            CharFile.WriteBold("Techniques Known:");
+            CharFile.WriteLine(" ");
+            CharFile.WriteItalics("            Control-");
+            CharFile.WriteLine(" None");
+            CharFile.WriteItalics("            Genjutsu-");
+            CharFile.WriteLine(" None");
+            CharFile.WriteItalics("            Ninjutsu-");
+            CharFile.WriteLine(" None");
+            CharFile.WriteItalics("            Taijutsu-");
+            CharFile.WriteLine(" None");
+
+            //Fluff Text - because Frankto Insists on it.
+            string FluffText = MyCharType.GetFlavorText();
+
+            if (FluffText != "")
+            {
+                CharFile.Write(FluffText);
+            }
+
+            //Speed and Strength Rank and Bloodline Activated
+            if (MaxSpeedRank > 0 || MaxStrengthRank > 0 || _BloodlineTemplate != null)
+            {
+ 
+                if (MaxStrengthRank > 0 || MaxSpeedRank > 0)
+                {
+                    NPCTemplate TempPowerTemplate = new NPCTemplate("", 0, 0, 0, 0, 0, "class", 0, 0, 0, 0, 0, 0, null, 0, 0, 0, "", null);
+                    TempPowerTemplate.ConsumeTemplate(this);
+                    TempPowerTemplate.MyCharType = this.MyCharType;
+                    TempPowerTemplate.CharacterName = this.CharacterName;
+
+                    StringBuilder StatBlockText = new StringBuilder("");
+
+                    ConsumeStrAndSpeedTemplate(TempPowerTemplate, StatBlockText);
+
+                    CharFile.WriteLine("");
+                    TempPowerTemplate.PrintCharacterTitle(CharFile, StatBlockText.ToString());
+                    TempPowerTemplate.PrintCoreStatblock(CharFile);
+                }
+
+                if (_BloodlineTemplate != null)
+                {
+                    StringBuilder StatBlockText = new StringBuilder("");
+
+                    NPCTemplate TempPowerTemplate = new NPCTemplate("", 0, 0, 0, 0, 0, "class", 0, 0, 0, 0, 0, 0, null, 0, 0, 0, "", null);
+                    TempPowerTemplate.ConsumeTemplate(this);
+                    TempPowerTemplate.MyCharType = this.MyCharType;
+                    TempPowerTemplate.CharacterName = this.CharacterName;
+
+                    if (StatBlockText.Length > 0)
+                    {
+                        StatBlockText.Append(" and ");
+                    }
+                    StatBlockText.Append("Bloodline Activated");
+
+                    TempPowerTemplate.ConsumeTemplate(_BloodlineTemplate);
+
+                    TempPowerTemplate.ConsumeStrAndSpeedTemplate(TempPowerTemplate, StatBlockText);
+
+                    CharFile.WriteLine("");
+                    TempPowerTemplate.PrintCharacterTitle(CharFile, StatBlockText.ToString());
+                    TempPowerTemplate.PrintCoreStatblock(CharFile);
+                }
+            }
+
+            //Bunshin
+            if (MyBunshinType.GetType() != typeof(NormalType))
+            {
+                NPCTemplate TempPowerTemplate = new NPCTemplate("", 0, 0, 0, 0, 0, "class", 0, 0, 0, 0, 0, 0, null, 0, 0, 0, "", null);
+                TempPowerTemplate.ConsumeTemplate(this);
+                TempPowerTemplate.MyCharType = this.MyBunshinType;
+                TempPowerTemplate.CharacterName = this.CharacterName;
+
+                TempPowerTemplate.ConsumeTemplate(MyBunshinType.CreateTemplate(TempPowerTemplate));
+
+                CharFile.WriteLine("");
+                TempPowerTemplate.PrintCharacterTitle(CharFile, MyBunshinType.GetTitleText());
+                TempPowerTemplate.PrintCoreStatblock(CharFile);
+
+                if (MaxStrengthRank > 0 || MaxSpeedRank > 0)
+                {
+                    NPCTemplate TempPowerTemplate2 = new NPCTemplate("", 0, 0, 0, 0, 0, "class", 0, 0, 0, 0, 0, 0, null, 0, 0, 0, "", null);
+                    TempPowerTemplate2.ConsumeTemplate(TempPowerTemplate);
+                    TempPowerTemplate2.MyCharType = this.MyCharType;
+                    TempPowerTemplate2.CharacterName = this.CharacterName;
+
+                    StringBuilder StatBlockText = new StringBuilder("");
+
+                    ConsumeStrAndSpeedTemplate(TempPowerTemplate2, StatBlockText);
+
+                    if (StatBlockText.Length > 0)
+                    {
+                        StatBlockText.Append(" and ");
+                    }
+                    StatBlockText.Append(MyBunshinType.GetTitleText());
+
+                    CharFile.WriteLine("");
+                    TempPowerTemplate2.PrintCharacterTitle(CharFile, StatBlockText.ToString());
+                    TempPowerTemplate2.PrintCoreStatblock(CharFile);
+                }
+            }
+
+            //Close File
+            CharFile.Close();
+        }
+
+        private void ConsumeStrAndSpeedTemplate(NPCTemplate TempPowerTemplate, StringBuilder StatBlockText)
+        {
+            if (MaxStrengthRank > 0)
+            {
+                if (StatBlockText.Length > 0)
+                {
+                    StatBlockText.Append(" and ");
+                }
+                StatBlockText.Append("Rank " + MaxStrengthRank + " Strength");
+                NPCTemplate StrRankTem = Nd20StatBlockLib.CreateStrRankTemplate(MaxStrengthRank);
+                TempPowerTemplate.ConsumeTemplate(StrRankTem);
+            }
+
+            if (MaxSpeedRank > 0)
+            {
+                if (StatBlockText.Length > 0)
+                {
+                    StatBlockText.Append(" and ");
+                }
+                StatBlockText.Append("Rank " + MaxSpeedRank + " Speed");
+                NPCTemplate SpeedRankTem = Nd20StatBlockLib.CreateSpeedRankTemplate(MaxSpeedRank);
+                TempPowerTemplate.ConsumeTemplate(SpeedRankTem);
+            }
+        }
+
+        private void PrintCharacterTitle(RTFWriter CharFile, string FlavorText)
+        {
+            if ("" != FlavorText)
+            {
+                CharFile.WriteBold(CharacterName + " [" + FlavorText + "]");
+            }
+            else
+            {
+                CharFile.WriteBold(CharacterName);
+            }
+            CharFile.WriteLine("");
+        }
+
+        private void PrintCoreStatblock(RTFWriter CharFile)
+        {
+            //Class Entries
+            CharFile.Write(ClassStatEntry.PrintClassHeaderEntries(ClassEntries));
+
+            //CR and Type
+            CharFile.Write("; CR ");
+            CharFile.Write(TemplateCR.ToString() + MyCharType.GetXPText());
+            CharFile.Write("; " + CharacterSize.ReturnSizeText(CharSize) + " humanoid");
+
+            if (null != MySpecialTemplates && 0 < MySpecialTemplates.Count)
+            {
+                CharFile.Write(" (");
+                bool Temp = false;
+                foreach (String MyString in MySpecialTemplates)
+                {
+                    if (false == Temp)
+                    {
+                        Temp = true;
+                    }
+                    else
+                    {
+                        CharFile.Write("; ");
+                    }
+                    CharFile.Write(MyString);
+                }
+                CharFile.Write(")");
+            }
+
+            CharFile.Write("; ");
+
+            //HD and HP
+            int AverageHP = MyCharType.GetAverageHP(ClassEntries, BaseStats.ConMod, BonusHPFromTemplate);
+            CharFile.Write(ClassStatEntry.PrintHDAndHPEntries(ClassEntries, BaseStats.ConMod, BonusHPFromTemplate, AverageHP));
+
+            //Init
+            CharFile.WriteBold("Init");
+            if ((BaseInitiative + BaseStats.DexMod) >= 0)
+            {
+                CharFile.Write(" +" + (BaseInitiative + BaseStats.DexMod) + "; ");
+            }
+            else
+            {
+                CharFile.Write(" " + (BaseInitiative + BaseStats.DexMod) + "; ");
+            }
+
+            //Speed
+            CharFile.WriteBold("Spd");
+            CharFile.Write(" " + CharacterSpeed + " ft; ");
+
+            //Defense
+            DefenseStat MyDefense = new DefenseStat();
+            MyDefense.Consume(TemplateDefense);
+            MyDefense.SetModifier("dex", 0);
+            MyDefense.AddModifier("dex", BaseStats.DexMod, true, false);
+
+            if (PowerUnitCount > 0)
+            {
+                MyDefense.AddModifier("power units", (int)(.5 * PowerUnitCount), false, false);
+            }
+
+            CharFile.Write(MyDefense.ToStringRTF());
+
+            //BAB
+            TemplateAttacks.SetStatMods(BaseStats.StrMod, BaseStats.StrMod, BaseStats.DexMod);
+            CharFile.Write(TemplateAttacks.ToStringRTF());
+
+            //FS
+            CharFile.WriteBold("FS");
+            CharFile.Write(" " + CharacterSize.PrintFightingSpace(CharSize) + " ");
+
+            //Reach
+            CharFile.WriteBold("Reach");
+            CharFile.Write(" " + CharacterSize.CalculateReach(CharSize) + " ft; ");
+
+            //Special Qualities - if they possess a bloodline
+            if ("" != SpecialQualities)
+            {
+                CharFile.WriteBold("SQ");
+                CharFile.Write(" ");
+                CharFile.Write(SpecialQualities);
+                CharFile.Write("; ");
+            }
+
+            //Alleigiance
+            CharFile.WriteBold("AL");
+            CharFile.Write(" Varies; ");
+
+            //Saves
+            CharFile.WriteBold("SV");
+            CharFile.Write(" Fort ");
+
+            if (BaseFortSave >= 0)
+            {
+                CharFile.Write("+");
+            }
+            CharFile.Write((BaseStats.ConMod + BaseFortSave).ToString() + ", Ref ");
+
+            if (BaseReflexSave >= 0)
+            {
+                CharFile.Write("+");
+            }
+            CharFile.Write((BaseStats.DexMod + BaseReflexSave).ToString() + ", Will ");
+
+            if (BaseWillSave >= 0)
+            {
+                CharFile.Write("+");
+            }
+            CharFile.Write((BaseStats.WisMod + BaseWillSave).ToString() + "; ");
+
+            //AP
+            CharFile.WriteBold("AP");
+            CharFile.Write(" " + ClassStatEntry.GetTotalLevel(ClassEntries) + "; ");
+
+            //Chakra Pool
+            CharFile.WriteBold("CP");
+            CharFile.Write(" " + MaxChakraPool + " (" + ChakraReservePool + " reserve); ");
+
+            //Reputation
+            CharFile.WriteBold("Rep");
+            CharFile.Write(" +" + BaseReputation + "; ");
+
+            //Wealth
+            CharFile.WriteBold("Wealth");
+            CharFile.Write(" +" + CharacterWealth + "; ");
+
+            //Learn
+            //CharFile.WriteBold("Learn");
+            //CharFile.Write(" +" + CharacterLearn + "; ");
+
+            //Print Out Stats
+            CharFile.WriteBold("Str");
+            CharFile.Write(" " + BaseStats.StrScore + ", ");
+            CharFile.WriteBold("Dex");
+            CharFile.Write(" " + BaseStats.DexScore + ", ");
+            CharFile.WriteBold("Con");
+            CharFile.Write(" " + BaseStats.ConScore + ", ");
+            CharFile.WriteBold("Int");
+            CharFile.Write(" " + BaseStats.IntScore + ", ");
+            CharFile.WriteBold("Wis");
+            CharFile.Write(" " + BaseStats.WisScore + ", ");
+            CharFile.WriteBold("Cha");
+            CharFile.WriteLine(" " + BaseStats.ChaScore + ".");
+        }
+
+        public void ConsumeTemplate(NPCTemplate TemplateToBeConsumed)
+        {
+            if (null != TemplateToBeConsumed.ClassEntries)
+            {
+                foreach (ClassStatEntry MyEntry in TemplateToBeConsumed.ClassEntries)
+                {
+                    ClassEntries.Add(MyEntry);
+                }
+            }
+
+            TemplateCR += TemplateToBeConsumed.TemplateCR;
+            TemplateECL += TemplateToBeConsumed.TemplateECL;
+
+            foreach (string SpecialTemplate in TemplateToBeConsumed.MySpecialTemplates)
+            {
+                MySpecialTemplates.Add(SpecialTemplate);
+            }
+
+            BaseInitiative += TemplateToBeConsumed.BaseInitiative;
+            TemplateAttacks.Consume(TemplateToBeConsumed.TemplateAttacks);
+
+            TemplateDefense.Consume(TemplateToBeConsumed.TemplateDefense);
+
+            BaseFortSave += TemplateToBeConsumed.BaseFortSave;
+            BaseReflexSave += TemplateToBeConsumed.BaseReflexSave;
+            BaseWillSave += TemplateToBeConsumed.BaseWillSave;
+
+            BaseReputation += TemplateToBeConsumed.BaseReputation;
+            MaxChakraPool += TemplateToBeConsumed.MaxChakraPool;
+            ChakraReservePool += TemplateToBeConsumed.ChakraReservePool;
+
+            CharacterLearn += TemplateToBeConsumed.CharacterLearn;
+            CharacterWealth += TemplateToBeConsumed.CharacterWealth;
+            CharacterSpeed += TemplateToBeConsumed.CharacterSpeed;
+
+            //Consume SQ
+            this.ConsumeSQ(TemplateToBeConsumed.SpecialQualities);
+
+            BonusHPFromTemplate += TemplateToBeConsumed.BonusHPFromTemplate;
+
+            if (null != TemplateToBeConsumed.BaseStats)
+            {
+                BaseStats.StrScore += TemplateToBeConsumed.BaseStats.StrScore;
+                BaseStats.DexScore += TemplateToBeConsumed.BaseStats.DexScore;
+                BaseStats.ConScore += TemplateToBeConsumed.BaseStats.ConScore;
+                BaseStats.IntScore += TemplateToBeConsumed.BaseStats.IntScore;
+                BaseStats.WisScore += TemplateToBeConsumed.BaseStats.WisScore;
+                BaseStats.ChaScore += TemplateToBeConsumed.BaseStats.ChaScore;
+            }
+
+            BonusFeats += TemplateToBeConsumed.BonusFeats;
+            BonusSkillPoints += TemplateToBeConsumed.BonusSkillPoints;
+
+            MaxStrengthRank += TemplateToBeConsumed.MaxStrengthRank;
+            MaxSpeedRank += TemplateToBeConsumed.MaxSpeedRank;
+
+            if (TemplateToBeConsumed.CharSize != CharacterSize.CharacterSizeEnum.NOT_DEFINED)
+            {
+                CharSize = TemplateToBeConsumed.CharSize;
+            }
+            
+        }
+
+        public int GetCurrentLevel()
+        {
+            int Total = 0;
+
+            if (null == ClassEntries)
+            {
+                return 0;
+            }
+            else if (0 == ClassEntries.Count)
+            {
+                return 0;
+            }
+            else
+            {
+                foreach (ClassStatEntry MyClass in ClassEntries)
+                {
+                    Total += MyClass.ClassLevel;
+                }
+                return Total;
+            }
+        }
+
+        public void ConsumeSQ(string SQToBeConsumed)
+        {
+            if (SQToBeConsumed != null && SQToBeConsumed != "")
+            {
+                if (this.SpecialQualities == null || this.SpecialQualities == "")
+                {
+                    this.SpecialQualities = SQToBeConsumed;
+                }
+                else
+                {
+                    this.SpecialQualities += ", " + SQToBeConsumed;
+                }
+            }
+        }
+
+        public static void CreateItemAndPrintEx(CharacterStats BaseStats, string[] ClassList, int[] LevelList, string FileName, int PUCount, int PowerRankCount, int BloodlineChosen, IRace RaceType, ICharacterType CharType, ICharacterType BunshinType, int MaxStrRank, int MaxSpeedRank)
+        {
+            NPCTemplate MyTemplate = CreateCharacterStatblock3(BaseStats, ClassList, LevelList, FileName, RaceType);
+
+            MyTemplate.MyCharType = CharType;
+            MyTemplate.MyBunshinType = BunshinType;
+            MyTemplate.MaxStrengthRank = MaxStrRank;
+            MyTemplate.MaxSpeedRank = MaxSpeedRank;
+
+            if (PUCount > 0)
+            {
+                NPCTemplate PowerUnitTemplate = Nd20StatBlockLib.CreatePUTemplate(PUCount);
+                MyTemplate.ConsumeTemplate(PowerUnitTemplate);
+            }
+
+            if (PowerRankCount > 0)
+            {
+                NPCTemplate PowerRankTemplate = Nd20StatBlockLib.CreatePowerRankTemplate(PowerRankCount, MyTemplate);
+                MyTemplate.ConsumeTemplate(PowerRankTemplate);
+            }
+
+            MyTemplate.ConsumeTemplate(MyTemplate.MyCharType.CreateTemplate(MyTemplate));
+
+            //Bloodlines here
+            MyTemplate.ConsumeSQ(BloodlineRetrievalLibrary.GetBloodlineSQ(BloodlineChosen, MyTemplate.GetCurrentLevel()));
+            MyTemplate.TemplateECL += BloodlineRetrievalLibrary.getECLAddition(BloodlineChosen, MyTemplate.GetCurrentLevel());
+            MyTemplate._BloodlineTemplate = ConvertBloodlineTemplate(BloodlineRetrievalLibrary.GetBloodlineTemplate(BloodlineChosen, MyTemplate.GetCurrentLevel()), BloodlineRetrievalLibrary.GetBloodlineDefenseText(BloodlineChosen));
+
+            MyTemplate.ConsumeTemplate(CharacterSize.CreateSizeTemplate(MyTemplate.CharSize));
+
+            MyTemplate.PrintTemplate();
+        }
+
+        private static NPCTemplate ConvertBloodlineTemplate(BloodlineTemplate TemplateToConvert, string DefenseTitle)
+        {
+            if (TemplateToConvert == null || TemplateToConvert.IsZeroTemplate() == true)
+            {
+                return null;
+            }
+
+            CharacterStats MyStats = new CharacterStats(TemplateToConvert.StrBonus, TemplateToConvert.DexBonus, TemplateToConvert.ConBonus, TemplateToConvert.IntBonus, TemplateToConvert.WisBonus, TemplateToConvert.ChaBonus);
+
+            NPCTemplate NewTemp =  new NPCTemplate("", 0, 0, 0, 0, 0, "dex", 0, 0, 0, 0, 0, 0, MyStats, 0, 0, 0, "", null);
+
+            NewTemp.BaseInitiative += TemplateToConvert.InitBonus;
+            NewTemp.TemplateAttacks.AddAttackMod(TemplateToConvert.AttackBonus, true, true, false);
+            NewTemp.TemplateDefense.AddModifier(DefenseTitle, TemplateToConvert.DefenseBonus, true, false);
+            NewTemp.BaseFortSave += TemplateToConvert.FortBonus;
+            NewTemp.BaseReflexSave += TemplateToConvert.ReflexBonus;
+            NewTemp.BaseWillSave += TemplateToConvert.WillBonus;
+            NewTemp.MaxStrengthRank += TemplateToConvert.StrRankBonus;
+            NewTemp.MaxSpeedRank += TemplateToConvert.SpeedRankBonus;
+
+            return NewTemp;
+        }
+
+        private static NPCTemplate CreateCharacterStatblock3(CharacterStats BaseStats, string[] ClassList, int[] LevelList, string lFilename, IRace RaceType)
+        {
+            NPCTemplate Character = new NPCTemplate(lFilename, 0, 0, 0, 0, 0, "dex", 0, 0, 0, 0, 0, 0, BaseStats, 0, 0, 0, "", null);
+
+            NPCTemplate Character2 = RaceType.CreateTemplate(Character);
+
+            Character.ConsumeTemplate(Character2);
+
+            for (int i = 0; i < ClassList.Length; i++)
+            {
+                if (ClassList[i] != null)
+                {
+                    XMLClassList XMLClassList = XMLClassList.Initialize();
+
+                    foreach (XMLCharacterClass MyClass in XMLClassList.ClassList)
+                    {
+                        if (MyClass.ClassTitle == ClassList[i])
+                        {
+                            Character.ConsumeTemplate(MyClass.CreateClassTemplate(LevelList[i], Character.GetCurrentLevel() + 1, Character.GetCurrentLevel() + LevelList[i], Character.BaseStats, Character.BonusSkillPoints));
+                        }
+                    }
+                }
+            }
+
+            if (Character.MaxSpeedRank > 0)
+            {
+                Character.ConsumeSQ("speed rank " + Character.MaxSpeedRank);
+            }
+
+            if (Character.MaxStrengthRank > 0)
+            {
+                Character.ConsumeSQ("strength rank " + Character.MaxStrengthRank);
+            }
+
+            return Character;
+        }
+    }
+}

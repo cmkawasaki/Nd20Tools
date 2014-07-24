@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="Nd20StatblockGenerator">
+</Property><Property Name="Solution File" Value="C:\Home Projects\Nd20StatblockGenerator\Nd20StatblockGenerator.sln">
+</Property><Property Name="Date" Value="Tuesday, April 28, 2009">
+</Property><Property Name="Time" Value="22:27 PM">
+</Property></Properties><Event ErrorLevel="0" Project="Nd20StatblockGenerator" Source="Nd20StatblockGenerator.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Nd20StatblockGenerator" Source="Nd20StatblockGenerator.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="Nd20StatblockGenerator.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="Nd20StatblockGenerator.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Nd20StatblockGenerator" Source="Nd20StatblockGenerator.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>
