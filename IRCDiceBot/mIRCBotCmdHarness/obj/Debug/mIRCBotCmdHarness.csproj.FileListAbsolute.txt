@@ -1,0 +1,12 @@
+C:\Users\Christopher\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\bin\Debug\mIRCBotCmdHarness.exe.config
+C:\Users\Christopher\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\bin\Debug\mIRCBotCmdHarness.exe
+C:\Users\Christopher\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\bin\Debug\mIRCBotCmdHarness.pdb
+C:\Users\Christopher\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\obj\Debug\mIRCBotCmdHarness.csprojResolveAssemblyReference.cache
+C:\Users\Christopher\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\obj\Debug\mIRCBotCmdHarness.exe
+C:\Users\Christopher\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\obj\Debug\mIRCBotCmdHarness.pdb
+C:\Users\Admin\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\bin\Debug\mIRCBotCmdHarness.exe.config
+C:\Users\Admin\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\obj\Debug\mIRCBotCmdHarness.exe
+C:\Users\Admin\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\obj\Debug\mIRCBotCmdHarness.pdb
+C:\Users\Admin\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\bin\Debug\mIRCBotCmdHarness.exe
+C:\Users\Admin\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\bin\Debug\mIRCBotCmdHarness.pdb
+C:\Users\Admin\SkyDrive\Projects\mIRCBotCmdHarness\mIRCBotCmdHarness\obj\Debug\mIRCBotCmdHarness.csprojResolveAssemblyReference.cache
